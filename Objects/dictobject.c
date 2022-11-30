@@ -2435,7 +2435,7 @@ dict_repr(PyDictObject *mp)
         Py_INCREF(value);
 
         if (!first) {
-            if (_PyUnicodeWriter_WriteASCIIString(&writer, ", ", 2) < 0)
+            if (_PyUnicodeWriter_WriteASCIIString(&writer, ",\n ", 3) < 0)
                 goto error;
         }
         first = 0;
