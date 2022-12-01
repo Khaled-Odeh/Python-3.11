@@ -6047,6 +6047,34 @@ static PyNumberMethods long_as_number = {
     long_long,                  /* nb_index */
 };
 
+static int
+long_length(PyLongObject *dv)
+{
+    int len = 0;
+    int num = dv->ob_digit[0];
+    if (num == 0) {
+        return 1;
+    }
+    while (num > 0) {
+        num /= 10;
+        len++;
+    }
+    return len;
+};
+
+static PySequenceMethods long_as_sequence = {
+    (lenfunc)long_length,                       /* sq_length */
+    0,                                          /* sq_concat */
+    0,                                          /* sq_repeat */
+    0,                                          /* sq_item */
+    0,                                          /* sq_slice */
+    0,                                          /* sq_ass_item */
+    0,                                          /* sq_ass_slice */
+    0,                                          /* sq_contains */
+    0,                                          /* sq_inplace_concat */
+    0,                                          /* sq_inplace_repeat */
+};
+
 PyTypeObject PyLong_Type = {
     PyVarObject_HEAD_INIT(&PyType_Type, 0)
     "integer_name",                             /* tp_name */
@@ -6059,7 +6087,7 @@ PyTypeObject PyLong_Type = {
     0,                                          /* tp_as_async */
     long_to_decimal_string,                     /* tp_repr */
     &long_as_number,                            /* tp_as_number */
-    0,                                          /* tp_as_sequence */
+    &long_as_sequence,                          /* tp_as_sequence */
     0,                                          /* tp_as_mapping */
     (hashfunc)long_hash,                        /* tp_hash */
     0,                                          /* tp_call */
