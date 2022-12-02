@@ -3096,6 +3096,86 @@ static PyMappingMethods list_as_mapping = {
     (objobjargproc)list_ass_subscript
 };
 
+static PyObject *
+
+list_sub(PyListObject *a, PyObject *bb)
+
+{
+    int cmp;
+    PyObject *u ;
+    int found;
+    Py_ssize_t i1;
+    Py_ssize_t i2;
+    PyListObject *np;        
+
+    /* The below check used to see if the left hand object is a list*/
+    if (!PyList_Check(bb)) {
+        PyErr_Format(PyExc_TypeError,
+                  "can only find difference list (not \"%.200s\") to list",
+                  Py_TYPE(bb)->tp_name);
+        return NULL;
+    }
+
+    if (Py_SIZE(a) == 0) {
+            return PyList_New(0);
+    }
+    np = (PyListObject *) PyList_New(0);
+    if (np == NULL) {
+            return NULL;
+    }
+    for (i1 = 0; i1 < Py_SIZE(a); i1++) {
+        found = 0 ;
+        PyObject *v = PyList_GET_ITEM(a, i1);
+        for (i2 = 0; i2 < Py_SIZE((PyListObject *) bb); i2++) {
+            u = PyList_GET_ITEM((PyListObject *) bb, i2);
+            cmp = PyObject_RichCompareBool(v, u, Py_EQ);
+            if (cmp == 1) {
+                found = 1;
+                break;
+            }
+        }
+        if (found == 0) {
+            PyList_Append((PyObject *) np, v);
+        }
+        else {
+            list_remove((PyListObject *) bb, u);
+        }
+    }
+    return (PyObject *)np;
+};
+
+static PyNumberMethods list_as_number = {
+    0,                         /*nb_add*/
+    (binaryfunc)list_sub,       /*nb_subtract*/
+    0,                          /*nb_multiply*/
+    0,                          /*nb_remainder*/
+    0,                          /*nb_divmod*/
+    0,                          /*nb_power*/
+    0,                          /*nb_negative*/
+    0,                          /*tp_positive*/
+    0,                          /*tp_absolute*/
+    0,                          /*tp_bool*/
+    0,                          /*nb_invert*/
+    0,                          /*nb_lshift*/
+    0,                          /*nb_rshift*/
+    0,                          /*nb_and*/
+    0,                          /*nb_xor*/
+    0,                          /*nb_or*/
+    0,                          /*nb_int*/
+    0,                          /*nb_reserved*/
+    0,                          /*nb_float*/
+    0,                          /* nb_inplace_add */
+    0,                          /* nb_inplace_subtract */
+    0,                          /* nb_inplace_multiply */
+    0,                          /* nb_inplace_remainder */
+    0,                          /* nb_inplace_power */
+    0,                          /* nb_inplace_lshift */
+    0,                          /* nb_inplace_rshift */
+    0,                          /* nb_inplace_and */
+    0,                          /* nb_inplace_xor */
+    0,                          /* nb_inplace_or */
+};
+
 PyTypeObject PyList_Type = {
     PyVarObject_HEAD_INIT(&PyType_Type, 0)
     "list",
@@ -3107,7 +3187,7 @@ PyTypeObject PyList_Type = {
     0,                                          /* tp_setattr */
     0,                                          /* tp_as_async */
     (reprfunc)list_repr,                        /* tp_repr */
-    0,                                          /* tp_as_number */
+    &list_as_number,                            /* tp_as_number */
     &list_as_sequence,                          /* tp_as_sequence */
     &list_as_mapping,                           /* tp_as_mapping */
     PyObject_HashNotImplemented,                /* tp_hash */
